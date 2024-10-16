@@ -62,8 +62,6 @@ workflows:
     jobs:
       - test-node
       - test-java
-    triggers:
-      - type: pull_request
     filters:
       branches:
         only:
