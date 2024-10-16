@@ -60,9 +60,22 @@ jobs:
 workflows:
   build-and-test:
     jobs:
-      - test-node
-      - test-java
-    filters:
-      branches:
-        only:
-          - main
+      - test-node:
+          filters:
+            branches:
+              only:
+                - main
+      - test-java:
+          filters:
+            branches:
+              only:
+                - main
+    # If you decide to include the deploy job, uncomment and configure it as follows:
+    # - deploy:
+    #     requires:
+    #       - test-node
+    #       - test-java
+    #     filters:
+    #       branches:
+    #         only:
+    #           - main
