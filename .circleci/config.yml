@@ -28,6 +28,8 @@ jobs:
     docker:
       - image: cimg/openjdk:17.0
     working_directory: ~/project/android
+    environment:
+      ANDROID_HOME: $ANDROID_HOME   # Use the environment variable set in CircleCI Project Settings
     steps:
       - checkout:
           path: ~/project
