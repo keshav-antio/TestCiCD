@@ -83,7 +83,6 @@ workflows:
             branches:
               only:
                 - main     # Will run only for main branch
-          filters:
             pull_requests:
               only:
                 - main
@@ -92,7 +91,6 @@ workflows:
             branches:
               only:
                 - main     # Will run only for main branch
-          filters:
             pull_requests:
               only:
                 - main
