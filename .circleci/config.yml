@@ -50,6 +50,10 @@ jobs:
       #       yes | ~/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
       #       ~/android-sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-30"  # Adjust the Android version if needed
       - run:
+          name: Install curl
+          command: |
+            apt-get update && apt-get install -y curl
+      - run:
           name: Install Node.js and Yarn
           command: |
             curl -sL https://deb.nodesource.com/setup_18.x | bash -  # Install Node.js without sudo
