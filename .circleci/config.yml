@@ -83,11 +83,19 @@ workflows:
             branches:
               only:
                 - main     # Will run only for main branch
+          filters:
+            pull_requests:
+              only:
+                - main
       - test-java:
           filters:
             branches:
               only:
                 - main     # Will run only for main branch
+          filters:
+            pull_requests:
+              only:
+                - main
     # If you decide to include the deploy job, uncomment and configure it as follows:
     # - deploy:
     #     requires:
