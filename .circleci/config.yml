@@ -29,7 +29,8 @@ jobs:
       - image: cimg/openjdk:17.0
     working_directory: ~/project/android
     environment:
-      ANDROID_HOME: $ANDROID_HOME   # Use the environment variable set in CircleCI Project Settings
+      ANDROID_HOME: ~/android-sdk  # Use home directory for Android SDK
+      PATH: ~/android-sdk/cmdline-tools/latest/bin:$PATH
     steps:
       - checkout:
           path: ~/project
@@ -39,11 +40,11 @@ jobs:
       - run:
           name: Install Android SDK Command Line Tools
           command: |
-            sudo mkdir -p $ANDROID_HOME/cmdline-tools
-            sudo curl -o sdk-tools-linux.zip https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip
-            unzip sdk-tools-linux.zip -d $ANDROID_HOME/cmdline-tools
-            yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --licenses
-            $ANDROID_HOME/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-30"  # You may adjust this version
+            mkdir -p ~/android-sdk/cmdline-tools/latest
+            curl -o sdk-tools-linux.zip https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip
+            unzip sdk-tools-linux.zip -d ~/android-sdk/cmdline-tools/latest
+            yes | ~/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+            ~/android-sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-30"  # Adjust the Android version if needed
       - run:
           name: Install Node.js and Yarn
           command: |
@@ -89,7 +90,7 @@ jobs:
   # New job for CodePush deployment
   # deploy:
   #   docker:
-  #     - image: circleci/node:14  # Use a Node.js image for the deployment
+  #     - image: circleci/node:18  # Use a Node.js image for the deployment
   #   steps:
   #     - checkout
   #     - run:
