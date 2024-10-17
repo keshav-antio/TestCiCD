@@ -11,9 +11,13 @@ jobs:
     steps:
       - checkout
       - node/install-packages:
-          pkg-manager: yarn     # We can use npm also instead of yarn 
+          pkg-manager: yarn     # We switched from npm to yarn
       - run:
           command: yarn add jest-junit 
+      - save_cache:                # Cache the node_modules directory
+          key: node-modules-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules
       - run:
           name: Run tests
           command: yarn test --ci --runInBand --reporters=default --reporters=jest-junit 
@@ -27,6 +31,8 @@ jobs:
     steps:
       - checkout:
           path: ~/project
+      - restore_cache:             # Restore the node_modules cache
+          key: node-modules-{{ checksum "../yarn.lock" }}
       - run:
           name: Calculate cache key
           command: |-
@@ -36,9 +42,14 @@ jobs:
           key: cache-{{ checksum "/tmp/CIRCLECI_CACHE_KEY" }}
       - run:
           name: Grant permission to gradlew
-          command: chmod +x ./gradlew    # Add this step to fix the permission issue
+          command: chmod +x ./gradlew    # Fix permission issue for gradlew
       - run:
-          command: ./gradlew check
+          command: ./gradlew check       # Run tests
+      - run:
+          name: Build Android APK
+          command: ./gradlew assembleRelease      # Build APK
+      - store_artifacts:                          # Save the APK as an artifact for download
+          path: android/app/build/outputs/apk/release/app-release.apk
       - store_test_results:
           path: build/test-results
       - save_cache:
@@ -48,15 +59,21 @@ jobs:
       - store_artifacts:
           path: build/reports
 
-  deploy:
-    # This is an example deploy job, not actually used by the workflow
-    docker:
-      - image: cimg/base:stable
-    steps:
-      # Replace this with steps to deploy to users
-      - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
+  # New job for CodePush deployment
+  # deploy:
+  #   docker:
+  #     - image: circleci/node:14  # Use a Node.js image for the deployment
+  #   steps:
+  #     - checkout
+  #     - run:
+  #       name: Install Dependencies
+  #       command: yarn install  # Install dependencies
+  #     - run:
+  #       name: Install AppCenter CLI
+  #       command: npm install -g appcenter-cli  # Install the AppCenter CLI for CodePush
+  #     - run:
+  #       name: Release to CodePush
+  #       command: appcenter codepush release-react -a <ownerName>/<appName> -d Production  # Replace with your AppCenter details
 
 workflows:
   build-and-test:
@@ -65,12 +82,12 @@ workflows:
           filters:
             branches:
               only:
-                - main
+                - main     # Will run only for main branch
       - test-java:
           filters:
             branches:
               only:
-                - main
+                - main     # Will run only for main branch
     # If you decide to include the deploy job, uncomment and configure it as follows:
     # - deploy:
     #     requires:
@@ -79,4 +96,5 @@ workflows:
     #     filters:
     #       branches:
     #         only:
-    #           - main                
+    #           - main                 # Deploy only on main branch
+
