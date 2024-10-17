@@ -31,6 +31,14 @@ jobs:
     steps:
       - checkout:
           path: ~/project
+      - run:
+          name: Install Node.js and Yarn
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y curl
+            curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -  # Install Node.js
+            sudo apt-get install -y nodejs
+            npm install -g yarn  # Install Yarn globally
       - restore_cache:             # Restore the node_modules cache
           key: node-modules-{{ checksum "../yarn.lock" }}
       - run:
