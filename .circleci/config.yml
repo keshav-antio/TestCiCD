@@ -44,6 +44,9 @@ jobs:
           name: Grant permission to gradlew
           command: chmod +x ./gradlew    # Fix permission issue for gradlew
       - run:
+          name: Clean project
+          command: ./gradlew clean       # Clean the project before running tests
+      - run:
           command: ./gradlew check       # Run tests
       - run:
           name: Build Android APK
