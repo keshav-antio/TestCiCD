@@ -34,6 +34,17 @@ jobs:
       - checkout:
           path: ~/project
       - run:
+          name: Create local.properties
+          command: echo "sdk.dir=$ANDROID_HOME" > local.properties   # Create local.properties with SDK path
+      - run:
+          name: Install Android SDK Command Line Tools
+          command: |
+            sudo mkdir -p $ANDROID_HOME/cmdline-tools
+            sudo curl -o sdk-tools-linux.zip https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip
+            unzip sdk-tools-linux.zip -d $ANDROID_HOME/cmdline-tools
+            yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --licenses
+            $ANDROID_HOME/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-30"  # You may adjust this version
+      - run:
           name: Install Node.js and Yarn
           command: |
             sudo apt-get update
