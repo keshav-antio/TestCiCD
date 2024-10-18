@@ -30,8 +30,12 @@ jobs:
       - image: cimg/openjdk:17.0.12
     working_directory: ~/project/android
     environment:
-      ANDROID_HOME: ~/android-sdk  # Use home directory for Android SDK
-      PATH: ~/android-sdk/cmdline-tools/latest/bin:$PATH
+      ANDROID_HOME: /usr/local/android-sdk  # Set to CircleCI's default location for Android SDK
+      PATH: |
+        /usr/local/android-sdk/cmdline-tools/latest/bin:   # Command-line tools
+        /usr/local/android-sdk/platform-tools:             # Platform tools (ADB, etc.)
+        /usr/local/android-sdk/build-tools/33.0.0:         # Build tools
+        $PATH
     steps:
       - checkout:
           path: ~/project
