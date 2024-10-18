@@ -44,12 +44,21 @@ jobs:
       # - node/install:
       #     node-version: '20.16' //define your node_version you are using
       - run:
+          name: Install Yarn
+          command: npm install -g yarn  # Install Yarn globally
+      - run:
+          name: Check yarn Version
+          command: yarn --version
+      - run:
           name: Install node modules
           command: yarn install
       - run:
           name: Chmod permissions
           command: sudo chmod +x ./gradlew
           working_directory: android
+      - run:
+          name: Clean project
+          command: ./gradlew clean
       # - run:
       #     name: Run tests and upload to Play Store
       #     command: fastlane deploy_to_production
