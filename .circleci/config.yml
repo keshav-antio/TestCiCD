@@ -26,8 +26,8 @@ jobs:
 
   test-java:
     docker:
-      - image: cimg/android:2024.10-node
-      - image: cimg/openjdk:17.0.12
+      - image: cimg/android:2024.10
+      # - image: cimg/openjdk:17.0.12
     working_directory: ~/project/android
     environment:
       ANDROID_HOME: /usr/local/android-sdk  # Set to CircleCI's default location for Android SDK
