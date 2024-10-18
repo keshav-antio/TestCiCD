@@ -44,8 +44,8 @@ jobs:
       # - node/install:
       #     node-version: '20.16' //define your node_version you are using
       - run:
-          name: Install Yarn
-          command: npm install -g yarn  # Install Yarn globally
+          name: Enable Yarn via Corepack
+          command: corepack enable  # This will install and set up Yarn
       - run:
           name: Check yarn Version
           command: yarn --version
