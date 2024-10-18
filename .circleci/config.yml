@@ -1,141 +1,104 @@
 version: 2.1
-orbs:
-  node: circleci/node@5
-
 jobs:
-  test-node:
-    # Install node dependencies and run tests
-    executor: node/default
-    environment:
-      JEST_JUNIT_OUTPUT_DIR: ./test-results/
+  build:
+    working_directory: ~/repo
+    docker:
+      - image: cimg/node:20.16
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: yarn     # We switched from npm to yarn
+      - restore_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
       - run:
-          command: yarn add jest-junit 
-      - save_cache:                # Cache the node_modules directory
-          key: node-modules-{{ checksum "yarn.lock" }}
-          paths:
-            - ./node_modules
+          name: Install Dependencies
+          command: yarn install
       - run:
           name: Run tests
-          command: yarn test --ci --runInBand --reporters=default --reporters=jest-junit 
-      - store_test_results:
-          path: ./test-results/
+          command: yarn test
 
-  test-java:
+  build-android:
     docker:
-      - image: cimg/openjdk:17.0.12
-      - image: cimg/android:2024.10
-    working_directory: ~/project/android
-    environment:
-      ANDROID_HOME: ~/android-sdk  # Use home directory for Android SDK
-      PATH: ~/android-sdk/cmdline-tools/latest/bin:$PATH
+      - image: cimg/android:2024.01
+        environment:
+          BUNDLE_PATH: vendor/bundle
+          JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+    working_directory: ~/repo
     steps:
-      - checkout:
-          path: ~/project
+      - checkout
       # - run:
-      #     name: Install Utilities
-      #     command: sudo apt-get update && sudo apt-get install -y unzip curl  # Install unzip and curl
+      #     name: Decrypt Keystore File
+      #     command: openssl aes-256-cbc -d -in android/app/release.keystore.enc -out android/app/release.keystore -k ENCRYPTION_KEY
       - run:
-          name: Check Operating System
+          name: Install Java 17
+          command: sudo apt-get update && sudo apt-get install -y openjdk-17-jdk
+      - run:
+          name: Set JAVA_HOME
+          command: echo 'export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64' >> $BASH_ENV
+      - run:
+          name: Install Node.js
           command: |
-            echo "OS Information:"
-            uname -a  # Print kernel information
-            cat /etc/os-release  # Print OS release information
+            curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+            sudo npm install -g yarn
       - run:
-          name: Create local.properties
-          command: echo "sdk.dir=$ANDROID_HOME" > local.properties   # Create local.properties with SDK path
+          name: Check Node Version
+          command: node --version
+      # - node/install:
+      #     node-version: '20.16' //define your node_version you are using
       # - run:
-      #     name: Install Android SDK Command Line Tools
-      #     command: |
-      #       mkdir -p ~/android-sdk/cmdline-tools/latest
-      #       curl -o sdk-tools-linux.zip https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip
-      #       unzip sdk-tools-linux.zip -d ~/android-sdk/cmdline-tools/latest
-      #       yes | ~/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
-      #       ~/android-sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-30"  # Adjust the Android version if needed
+      #     name: Enable Yarn via Corepack
+      #     command: corepack enable  # This will install and set up Yarn
       - run:
-          name: Install curl
-          command: |
-            apt-get update && apt-get install -y curl
+          name: Check yarn Version
+          command: yarn --version
       - run:
-          name: Install Node.js and Yarn
-          command: |
-            curl -sL https://deb.nodesource.com/setup_18.x | bash -  # Install Node.js without sudo
-            apt-get update
-            apt-get install -y nodejs
-            npm install -g yarn  # Install Yarn globally
-      - restore_cache:             # Restore the node_modules cache
-          key: node-modules-{{ checksum "../yarn.lock" }}
+          name: Install node modules
+          command: yarn install
       - run:
-          name: Install Node Dependencies
-          command: yarn install --frozen-lockfile     # Ensure node modules are installed
-      - run:
-          name: Calculate cache key
-          command: |-
-            find . -name 'pom.xml' -o -name 'gradlew*' -o -name '*.gradle*' | \
-                    sort | xargs cat > /tmp/CIRCLECI_CACHE_KEY
-      - restore_cache:
-          key: cache-{{ checksum "/tmp/CIRCLECI_CACHE_KEY" }}
-      - run:
-          name: Grant permission to gradlew
-          command: chmod +x ./gradlew    # Fix permission issue for gradlew
+          name: Chmod permissions
+          command: sudo chmod +x ./gradlew
+          working_directory: android
       - run:
           name: Clean project
-          command: ./gradlew clean       # Clean the project before running tests
+          working_directory: android
+          command: | 
+            pwd
+            ./gradlew clean
       - run:
-          command: ./gradlew check       # Run tests
+          name: Create Assets Folder
+          command: |
+            sudo mkdir -p android/app/src/main/assets  # Create the assets folder if it doesn't exist
+      # - run:
+      #     name: Change Ownership of Project Directory
+      #     command: |
+      #       sudo chown -R circleci:circleci ~/project/android
+      - run:
+          name: Generate React Native Bundle
+          command: |
+            pwd
+            sudo chown -R circleci:circleci ~/repo/android
+            npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/
       - run:
           name: Build Android APK
-          command: ./gradlew assembleRelease      # Build APK
-      - store_artifacts:                          # Save the APK as an artifact for download
-          path: android/app/build/outputs/apk/release/app-release.apk
-      - store_test_results:
-          path: build/test-results
-      - save_cache:
-          key: cache-{{ checksum "/tmp/CIRCLECI_CACHE_KEY" }}
-          paths:
-            - ~/.gradle/caches
+          working_directory: android
+          command: ./gradlew assembleDebug  # Build the debug APK
       - store_artifacts:
-          path: build/reports
-
-  # New job for CodePush deployment
-  # deploy:
-  #   docker:
-  #     - image: circleci/node:18  # Use a Node.js image for the deployment
-  #   steps:
-  #     - checkout
-  #     - run:
-  #       name: Install Dependencies
-  #       command: yarn install  # Install dependencies
-  #     - run:
-  #       name: Install AppCenter CLI
-  #       command: npm install -g appcenter-cli  # Install the AppCenter CLI for CodePush
-  #     - run:
-  #       name: Release to CodePush
-  #       command: appcenter codepush release-react -a <ownerName>/<appName> -d Production  # Replace with your AppCenter details
+          path: android/app/build/outputs/apk/debug/app-debug.apk  # Save the APK as an artifact
+            
+      # - run:
+      #     name: Run tests and upload to Play Store
+      #     command: fastlane deploy_to_production
+      #     working_directory: android
 
 workflows:
   build-and-test:
     jobs:
-      - test-node:
+      - build :
           filters:
             branches:
               only:
-                - main     # Will run only for main branch
-      - test-java:
+                - main 
+      - build-android:
           filters:
             branches:
               only:
-                - main     # Will run only for main branch
-    # If you decide to include the deploy job, uncomment and configure it as follows:
-    # - deploy:
-    #     requires:
-    #       - test-node
-    #       - test-java
-    #     filters:
-    #       branches:
-    #         only:
-    #           - main                 # Deploy only on main branch
-
+                - main 
