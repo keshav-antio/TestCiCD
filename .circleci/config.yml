@@ -67,8 +67,8 @@ jobs:
           name: Create Assets Folder
           command: |
             sudo mkdir -p android/app/src/main/assets  # Create the assets folder if it doesn't exist
+            chmod -R 777 android/app/src/main/assets  # Set permissions
       - run:
-
           name: Generate React Native Bundle
           command: |
             pwd
