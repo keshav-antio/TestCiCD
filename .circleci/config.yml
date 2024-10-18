@@ -67,10 +67,6 @@ jobs:
           name: Create Assets Folder
           command: |
             sudo mkdir -p android/app/src/main/assets  # Create the assets folder if it doesn't exist
-      # - run:
-      #     name: Change Ownership of Project Directory
-      #     command: |
-      #       sudo chown -R circleci:circleci ~/project/android
       - run:
           name: Generate React Native Bundle
           command: |
