@@ -39,6 +39,12 @@ jobs:
       #     name: Install Utilities
       #     command: sudo apt-get update && sudo apt-get install -y unzip curl  # Install unzip and curl
       - run:
+          name: Check Operating System
+          command: |
+            echo "OS Information:"
+            uname -a  # Print kernel information
+            cat /etc/os-release  # Print OS release information
+      - run:
           name: Create local.properties
           command: echo "sdk.dir=$ANDROID_HOME" > local.properties   # Create local.properties with SDK path
       # - run:
