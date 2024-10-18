@@ -26,11 +26,6 @@ jobs:
       - checkout
       - node/install-packages:
           pkg-manager: yarn     # We switched from npm to yarn
-      - run: yarn
-      - persist_to_worspace:
-          root: ~/project
-          paths: 
-            - node_modules
       - run:
           command: yarn add jest-junit 
       - save_cache:                # Cache the node_modules directory
