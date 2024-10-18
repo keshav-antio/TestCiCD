@@ -59,6 +59,7 @@ jobs:
           working_directory: android
       - run:
           name: Clean project
+          working_directory: android
           command: | 
             pwd
           # ./gradlew clean
