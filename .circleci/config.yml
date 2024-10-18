@@ -92,5 +92,13 @@ jobs:
 workflows:
   build-and-test:
     jobs:
-      - build
-      - build-android
+      - build :
+          filters:
+            branches:
+              only:
+                - main 
+      - build-android:
+          filters:
+            branches:
+              only:
+                - main 
