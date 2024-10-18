@@ -33,8 +33,8 @@ jobs:
       ANDROID_HOME: ~/android-sdk  # Use home directory for Android SDK
       PATH: ~/android-sdk/cmdline-tools/latest/bin:$PATH
     steps:
-      - checkout:
-          path: ~/project
+      - checkout
+          # path: ~/project
       # - run:
       #     name: Install Utilities
       #     command: sudo apt-get update && sudo apt-get install -y unzip curl  # Install unzip and curl
@@ -42,11 +42,11 @@ jobs:
           name: Check Operating System
           command: |
             echo "OS Information:"
-            uname -a  # Print kernel information
+            
             cat /etc/os-release  # Print OS release information
-      - run:
-          name: Create local.properties
-          command: echo "sdk.dir=$ANDROID_HOME" > local.properties   # Create local.properties with SDK path
+      # - run: uname -a  # Print kernel information
+      #     name: Create local.properties
+      #     command: echo "sdk.dir=$ANDROID_HOME" > local.properties   # Create local.properties with SDK path
       # - run:
       #     name: Install Android SDK Command Line Tools
       #     command: |
@@ -120,15 +120,15 @@ workflows:
   build-and-test:
     jobs:
       - test-node:
-          filters:
-            branches:
-              only:
-                - main     # Will run only for main branch
+          # filters:
+          #   branches:
+          #     only:
+          #       - main     # Will run only for main branch
       - test-java:
-          filters:
-            branches:
-              only:
-                - main     # Will run only for main branch
+          # filters:
+          #   branches:
+          #     only:
+          #       - main     # Will run only for main branch
     # If you decide to include the deploy job, uncomment and configure it as follows:
     # - deploy:
     #     requires:
