@@ -38,14 +38,15 @@ jobs:
           command: |
             curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
             sudo apt-get install -y nodejs
+            sudo npm install -g yarn
       - run:
           name: Check Node Version
           command: node --version
       # - node/install:
       #     node-version: '20.16' //define your node_version you are using
-      - run:
-          name: Enable Yarn via Corepack
-          command: corepack enable  # This will install and set up Yarn
+      # - run:
+      #     name: Enable Yarn via Corepack
+      #     command: corepack enable  # This will install and set up Yarn
       - run:
           name: Check yarn Version
           command: yarn --version
