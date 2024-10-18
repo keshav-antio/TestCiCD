@@ -63,6 +63,18 @@ jobs:
           command: | 
             pwd
             ./gradlew clean
+      - run:
+          name: Generate React Native Bundle
+          command: |
+            pwd
+            npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/
+      - run:
+          name: Build Android APK
+          working_directory: android
+          command: ./gradlew assembleDebug  # Build the debug APK
+      - store_artifacts:
+          path: android/app/build/outputs/apk/debug/app-debug.apk  # Save the APK as an artifact
+            
       # - run:
       #     name: Run tests and upload to Play Store
       #     command: fastlane deploy_to_production
