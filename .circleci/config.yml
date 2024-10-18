@@ -41,8 +41,8 @@ jobs:
       - run:
           name: Check Node Version
           command: node --version
-      - node/install:
-          node-version: '20.16' //define your node_version you are using
+      # - node/install:
+      #     node-version: '20.16' //define your node_version you are using
       - run:
           name: Install node modules
           command: yarn install
