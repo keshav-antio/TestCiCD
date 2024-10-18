@@ -14,3 +14,43 @@ jobs:
       - run:
           name: Run tests
           command: yarn test
+
+  build-android:
+    docker:
+      - image: cimg/android:2024.01
+        environment:
+          BUNDLE_PATH: vendor/bundle
+          JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    working_directory: ~/repo
+    steps:
+      - checkout
+      # - run:
+      #     name: Decrypt Keystore File
+      #     command: openssl aes-256-cbc -d -in android/app/release.keystore.enc -out android/app/release.keystore -k ENCRYPTION_KEY
+      - run:
+          name: Install Java 17
+          command: sudo apt-get update && sudo apt-get install -y openjdk-17-jdk
+      - run:
+          name: Set JAVA_HOME
+          command: echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64' >> $BASH_ENV
+      - run:
+          name: Install Node.js
+          command: |
+            curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+      - run:
+          name: Check Node Version
+          command: node --version
+      - node/install:
+          node-version: '20.16' //define your node_version you are using
+      - run:
+          name: Install node modules
+          command: yarn install
+      - run:
+          name: Chmod permissions
+          command: sudo chmod +x ./gradlew
+          working_directory: android
+      # - run:
+      #     name: Run tests and upload to Play Store
+      #     command: fastlane deploy_to_production
+      #     working_directory: android
