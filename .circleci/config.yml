@@ -3,6 +3,20 @@ orbs:
   node: circleci/node@5
 
 jobs:
+
+  check-os:
+    docker:
+      - image: cimg/android:2024.10 # Use the CircleCI Android image
+    steps:
+      - checkout
+      - run:
+          name: Check Operating System
+          command: |
+            echo "Operating System Information:"
+            uname -a  # Kernel and architecture info
+            cat /etc/os-release  # OS version details
+
+
   test-node:
     # Install node dependencies and run tests
     executor: node/default
@@ -12,6 +26,11 @@ jobs:
       - checkout
       - node/install-packages:
           pkg-manager: yarn     # We switched from npm to yarn
+      - run: yarn
+      - persist_to_worspace:
+          root: ~/project
+          paths: 
+            - node_modules
       - run:
           command: yarn add jest-junit 
       - save_cache:                # Cache the node_modules directory
@@ -119,6 +138,7 @@ jobs:
 workflows:
   build-and-test:
     jobs:
+      - check-os
       - test-node
           # filters:
           #   branches:
