@@ -119,12 +119,12 @@ jobs:
 workflows:
   build-and-test:
     jobs:
-      - test-node:
+      - test-node
           # filters:
           #   branches:
           #     only:
           #       - main     # Will run only for main branch
-      - test-java:
+      - test-java
           # filters:
           #   branches:
           #     only:
