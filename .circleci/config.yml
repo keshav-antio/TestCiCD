@@ -62,7 +62,7 @@ jobs:
           working_directory: android
           command: | 
             pwd
-          # ./gradlew clean
+            ./gradlew clean
       # - run:
       #     name: Run tests and upload to Play Store
       #     command: fastlane deploy_to_production
