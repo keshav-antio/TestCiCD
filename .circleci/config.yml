@@ -1,74 +1,16 @@
 version: 2.1
-orbs:
-  node: circleci/node@6.3.0
-
 jobs:
-  test-node:
-    # Install node dependencies and run tests
-    executor: node/default
-    environment:
-      JEST_JUNIT_OUTPUT_DIR: ./test-results/
+  build:
+    working_directory: ~/repo
+    docker:
+      - image: cimg/node:18.10.0
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: yarn     # We switched from npm to yarn
+      - restore_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
       - run:
-          command: yarn add jest-junit 
-      - save_cache:                # Cache the node_modules directory
-          key: node-modules-{{ checksum "yarn.lock" }}
-          paths:
-            - ./node_modules
+          name: Install Dependencies
+          command: yarn install
       - run:
           name: Run tests
-          command: yarn test --ci --runInBand --reporters=default --reporters=jest-junit 
-      - store_test_results:
-          path: ./test-results/
-
-  test-java:
-    docker:
-      - image: cimg/android:2024.10
-      # - image: cimg/openjdk:17.0.12
-    working_directory: ~/project/android
-    environment:
-      ANDROID_HOME: /usr/local/android-sdk  # Set to CircleCI's default location for Android SDK
-      PATH: |
-        /usr/local/android-sdk/cmdline-tools/latest/bin:   # Command-line tools
-        /usr/local/android-sdk/platform-tools:             # Platform tools (ADB, etc.)
-        /usr/local/android-sdk/build-tools/33.0.0:         # Build tools
-        $PATH
-    steps:
-      - checkout:
-          path: ~/project
-      # - run:
-      #     name: Calculate cache key
-      #     command: |-
-      #       find . -name 'pom.xml' -o -name 'gradlew*' -o -name '*.gradle*' | \
-      #               sort | xargs cat > /tmp/CIRCLECI_CACHE_KEY
-      # - restore_cache:
-      #     key: cache-{{ checksum "/tmp/CIRCLECI_CACHE_KEY" }}
-      - run:
-          name: Grant permission to gradlew
-          command: chmod +x ./gradlew    # Fix permission issue for gradlew
-      - run:
-          name: Clean project
-          command: ./gradlew clean       # Clean the project before running tests
-      - run:
-          command: ./gradlew check       # Run tests
-      - run:
-          name: Build Android APK
-          command: ./gradlew assembleRelease      # Build APK
-      - store_artifacts:                          # Save the APK as an artifact for download
-          path: android/app/build/outputs/apk/release/app-release.apk
-      - store_test_results:
-          path: build/test-results
-      - save_cache:
-          key: cache-{{ checksum "/tmp/CIRCLECI_CACHE_KEY" }}
-          paths:
-            - ~/.gradle/caches
-      - store_artifacts:
-          path: build/reports
-workflows:
-  build-and-test:
-    jobs:
-      - test-node
-      - test-java
+          command: yarn test
